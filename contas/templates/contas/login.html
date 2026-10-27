@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titulo %}Entrar · Salgateria da Jéssica{% endblock %}
+{% block topo %}{% endblock %}
+{% block content %}
+<div class="login">
+  <section class="login-arte">
+    <div class="marca"><span class="logo">SJ</span> Salgateria da Jéssica</div>
+    <div>
+      <h1>Vendas e estoque no mesmo lugar.</h1>
+      <p>Busque produtos, monte o pedido, registre o pagamento e entregue o comprovante em poucos passos.</p>
+    </div>
+    <span class="forno" aria-hidden="true"></span>
+  </section>
+  <section class="login-form">
+    <form method="post">{% csrf_token %}
+      <h2>Entrar</h2>
+      <p class="suave" style="margin-bottom:1rem">Use seu login e sua senha para acessar o sistema.</p>
+      {% for e in form.non_field_errors %}<div class="alerta erro" role="alert">{{ e }}</div>{% endfor %}
+      {% include "_campo.html" with campo=form.username %}
+      {% include "_campo.html" with campo=form.password %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <button class="btn cheio" type="submit">Entrar</button>
+      <p class="suave" style="margin-top:1rem">Conta inativa ou sem acesso? Fale com a proprietária para ativar o seu usuário.</p>
+    </form>
+  </section>
+</div>
+{% endblock %}

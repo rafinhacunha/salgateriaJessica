@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block titulo %}Excluir produto · Salgateria da Jéssica{% endblock %}
+{% block content %}
+<div class="cartao" style="max-width:520px">
+  <h1>Excluir {{ produto.nome }}?</h1>
+  <p>Este produto não tem vendas nem movimentos, então pode ser removido de vez. Essa ação não pode ser desfeita.</p>
+  <form method="post" class="acoes" style="margin-top:1rem">{% csrf_token %}
+    <button class="btn perigo" type="submit">Excluir produto</button>
+    <a class="btn sec" href="{% url 'catalogo:lista' %}">Cancelar</a>
+  </form>
+</div>
+{% endblock %}

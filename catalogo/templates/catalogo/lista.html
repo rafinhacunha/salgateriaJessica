@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load formatos %}
+{% block titulo %}Catálogo · Salgateria da Jéssica{% endblock %}
+{% block content %}
+<div class="cabeca">
+  <div><h1>Catálogo</h1><p class="suave">Cadastre, altere e inative produtos. Produto inativo some das vendas novas, mas fica no histórico.</p></div>
+  <a class="btn" href="{% url 'catalogo:criar' %}">+ Novo produto</a>
+</div>
+<div class="cartao">
+  <form method="get" class="linha-busca" style="margin-bottom:1rem">
+    <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nome ou categoria" aria-label="Buscar produto">
+    <button class="btn" type="submit">Buscar</button>
+  </form>
+  {% if produtos %}
+  <div class="tabela-rolagem"><table>
+    <thead><tr><th>Produto</th><th class="num">Preço</th><th class="num">Saldo</th><th>Situação</th><th></th></tr></thead>
+    <tbody>{% for p in produtos %}
+      <tr>
+        <td>{{ p.nome }}<span class="sub">{{ p.categoria }} · {{ p.unidade }}</span></td>
+        <td class="num">{{ p.preco_centavos|brl }}</td>
+        <td class="num">{{ p.saldo }}</td>
+        <td>{% if p.ativo %}<span class="tag ok">Ativo</span>{% else %}<span class="tag">Inativo</span>{% endif %}</td>
+        <td><div class="acoes" style="justify-content:flex-end">
+          <a class="btn sec pequeno" href="{% url 'catalogo:editar' p.pk %}">Editar</a>
+          <form method="post" action="{% url 'catalogo:situacao' p.pk %}">{% csrf_token %}
+            <button class="btn sec pequeno" type="submit">{% if p.ativo %}Inativar{% else %}Reativar{% endif %}</button></form>
+          {% if p.pode_excluir %}<a class="btn perigo pequeno" href="{% url 'catalogo:excluir' p.pk %}">Excluir</a>{% endif %}
+        </div></td>
+      </tr>{% endfor %}
+    </tbody></table></div>
+  {% else %}
+  <div class="vazio"><strong>Nenhum produto encontrado</strong>Cadastre o primeiro produto para começar a vender.</div>
+  {% endif %}
+</div>
+{% endblock %}
