@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load formatos %}
+{% block titulo %}Relatório de vendas · Salgateria da Jéssica{% endblock %}
+{% block content %}
+<div class="cabeca"><div><h1>Relatório de vendas</h1><p class="suave">Vendas concluídas por período e forma de pagamento.</p></div></div>
+<div class="cartao" style="margin-bottom:1.25rem">
+  <form method="get" style="display:flex;gap:.8rem;align-items:flex-end;flex-wrap:wrap">
+    <div class="campo" style="margin:0"><label for="{{ form.inicio.id_for_label }}">De</label>{{ form.inicio }}</div>
+    <div class="campo" style="margin:0"><label for="{{ form.fim.id_for_label }}">Até</label>{{ form.fim }}</div>
+    <button class="btn" type="submit">Consultar</button>
+  </form>
+  {% for e in form.non_field_errors %}<div class="erro-campo" role="alert">{{ e }}</div>{% endfor %}
+  {% for e in form.inicio.errors %}<div class="erro-campo" role="alert">{{ e }}</div>{% endfor %}
+  {% for e in form.fim.errors %}<div class="erro-campo" role="alert">{{ e }}</div>{% endfor %}
+</div>
+{% if dados %}
+<div class="cartao" style="margin-bottom:1.25rem">
+  <h2>Totais de {{ inicio|date:"d/m/Y" }} a {{ fim|date:"d/m/Y" }}</h2>
+  <div class="tabela-rolagem"><table>
+    <thead><tr><th>Forma de pagamento</th><th class="num">Vendas</th><th class="num">Total</th></tr></thead>
+    <tbody>{% for m in dados.por_meio %}<tr><td>{{ m.rotulo }}</td><td class="num">{{ m.quantidade }}</td><td class="num">{{ m.total|brl }}</td></tr>{% endfor %}
+      <tr><td><strong>Geral</strong></td><td class="num"><strong>{{ dados.quantidade }}</strong></td><td class="num"><strong>{{ dados.total|brl }}</strong></td></tr></tbody>
+  </table></div>
+</div>
+<div class="cartao">
+  <h2>Vendas do período</h2>
+  {% if dados.vendas %}<div class="tabela-rolagem"><table>
+    <thead><tr><th>Venda</th><th>Data/hora</th><th>Atendente</th><th>Pagamento</th><th class="num">Total</th><th></th></tr></thead>
+    <tbody>{% for v in dados.vendas %}<tr><td>{{ v.identificador }}</td><td>{{ v.data_hora|date:"d/m/Y H:i" }}</td><td>{{ v.usuario.nome_exibicao }}</td>
+      <td>{{ v.pagamento.get_meio_display }}</td><td class="num">{{ v.total_centavos|brl }}</td>
+      <td><a class="btn sec pequeno" href="{% url 'vendas:comprovante' v.pk %}">Comprovante</a></td></tr>{% endfor %}</tbody></table></div>
+  {% else %}<div class="vazio"><strong>Nenhuma venda neste período</strong>Escolha outras datas.</div>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

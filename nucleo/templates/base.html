@@ -1,0 +1,46 @@
+{% load static %}<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Salgateria da Jéssica{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'nucleo/app.css' %}">
+</head>
+<body>
+{% block topo %}
+<header class="topo">
+  <div class="topo-in">
+    <a class="marca" href="{% url 'vendas:nova' %}"><span class="logo">SJ</span> Salgateria da Jéssica</a>
+    <nav class="menu" aria-label="Principal">
+      <a href="{% url 'vendas:nova' %}" {% if secao == 'venda' %}class="ativo" aria-current="page"{% endif %}>Nova venda</a>
+      <a href="{% url 'estoque:consulta' %}" {% if secao == 'estoque' %}class="ativo" aria-current="page"{% endif %}>Estoque</a>
+      <a href="{% url 'vendas:lista' %}" {% if secao == 'vendas' %}class="ativo" aria-current="page"{% endif %}>Vendas</a>
+      {% if user.eh_proprietaria %}
+      <a href="{% url 'catalogo:lista' %}" {% if secao == 'catalogo' %}class="ativo" aria-current="page"{% endif %}>Catálogo</a>
+      <a href="{% url 'vendas:relatorio' %}" {% if secao == 'relatorio' %}class="ativo" aria-current="page"{% endif %}>Relatório</a>
+      {% endif %}
+    </nav>
+    <div class="usuario">
+      <span class="avatar">{{ user.iniciais }}</span>
+      <span>{{ user.nome_exibicao }}<small>{{ user.get_perfil_display }}</small></span>
+      <form method="post" action="{% url 'contas:sair' %}">{% csrf_token %}<button class="link-botao" type="submit">Sair</button></form>
+    </div>
+  </div>
+</header>
+{% endblock %}
+<main>
+  {% if messages %}<div class="messages">{% for m in messages %}
+    <div class="alerta {% if m.tags == 'error' %}erro{% elif m.tags == 'success' %}sucesso{% else %}info{% endif %}" role="{% if m.tags == 'error' %}alert{% else %}status{% endif %}">{{ m }}</div>
+  {% endfor %}</div>{% endif %}
+  {% block content %}{% endblock %}
+</main>
+<script>
+document.addEventListener('click', function (e) {
+  var b = e.target.closest('[data-passo]'); if (!b) return;
+  var campo = b.parentElement.querySelector('input'); var v = parseInt(campo.value || '1', 10) + parseInt(b.dataset.passo, 10);
+  campo.value = Math.max(parseInt(campo.min || '1', 10), v);
+});
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,8 @@
+{% load formatos %}
+<aside class="cartao">
+  <h3>Resumo do pedido <span class="suave" style="font-weight:400">{{ qtd_itens }} iten{{ qtd_itens|pluralize:"s" }}</span></h3>
+  {% for i in itens %}<div class="resumo-linha"><span>{{ i.produto.nome }}<span class="sub">{{ i.quantidade }} × {{ i.preco_unitario_centavos|brl }}</span></span><strong>{{ i.subtotal_centavos|brl }}</strong></div>{% endfor %}
+  <div class="total"><span class="suave">Total</span><strong>{{ total|brl }}</strong></div>
+  <button class="btn cheio" type="submit">Revisar e registrar</button>
+  <a class="btn sec cheio" style="margin-top:.5rem" href="{% url 'vendas:nova' %}">Voltar ao pedido</a>
+</aside>

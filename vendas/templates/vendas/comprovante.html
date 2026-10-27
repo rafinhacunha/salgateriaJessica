@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load formatos %}
+{% block titulo %}Comprovante {{ venda.identificador }} · Salgateria da Jéssica{% endblock %}
+{% block content %}
+{% include "vendas/_passos.html" with passo=5 etapas=etapas_venda %}
+<div class="sucesso-grade">
+  <section class="cartao nao-imprime">
+    <div class="check" aria-hidden="true">✓</div>
+    <h1>Venda registrada</h1>
+    <p class="suave">O recebimento foi confirmado e o estoque foi atualizado. Apresente o comprovante ao cliente.</p>
+    <div class="resumo-linha" style="margin-top:1rem"><span class="suave">Identificador</span><strong>{{ venda.identificador }}</strong></div>
+    <div class="resumo-linha"><span class="suave">Situação</span><span class="tag ok">{{ venda.get_situacao_display }}</span></div>
+    {% if venda.pagamento.meio == "DINHEIRO" %}<div class="troco-destaque"><span>Troco a devolver</span><strong>{{ venda.pagamento.troco_centavos|brl }}</strong></div>{% endif %}
+    <div class="acoes" style="margin-top:1rem">
+      <button class="btn" type="button" onclick="window.print()">Imprimir comprovante</button>
+      <a class="btn sec" href="{% url 'vendas:nova' %}">+ Nova venda</a>
+    </div>
+  </section>
+  <section class="cupom" aria-label="Comprovante de venda">
+    <div class="centro"><strong>SALGATERIA DA JÉSSICA</strong><br>Comprovante de venda<br><small>Documento sem valor fiscal</small></div><hr>
+    <div class="l"><span>Venda</span><span>{{ venda.identificador }}</span></div>
+    <div class="l"><span>Data/hora</span><span>{{ venda.data_hora|date:"d/m/Y H:i" }}</span></div>
+    <div class="l"><span>Atendente</span><span>{{ venda.usuario.nome_exibicao }}</span></div><hr>
+    {% for i in itens %}<div class="l"><span>{{ i.quantidade }} × {{ i.produto.nome }}</span><span>{{ i.subtotal_centavos|brl }}</span></div>
+      <div style="color:#7a6c63">&nbsp;&nbsp;{{ i.preco_unitario_centavos|brl }} cada</div>{% endfor %}<hr>
+    <div class="l forte"><span>TOTAL</span><span>{{ venda.total_centavos|brl }}</span></div>
+    <div class="l"><span>Pagamento</span><span>{{ venda.pagamento.get_meio_display }}</span></div>
+    {% if venda.pagamento.meio == "DINHEIRO" %}
+    <div class="l"><span>Recebido</span><span>{{ venda.pagamento.valor_recebido_centavos|brl }}</span></div>
+    <div class="l"><span>Troco</span><span>{{ venda.pagamento.troco_centavos|brl }}</span></div>{% endif %}<hr>
+    <div class="centro">Volte sempre!</div>
+  </section>
+</div>
+{% endblock %}

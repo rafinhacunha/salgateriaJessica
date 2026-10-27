@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load formatos %}
+{% block titulo %}Vendas · Salgateria da Jéssica{% endblock %}
+{% block content %}
+<div class="cabeca"><div><h1>Vendas concluídas</h1>
+  <p class="suave">{% if user.eh_proprietaria %}Todas as vendas.{% else %}Suas vendas. Abra uma para reapresentar o comprovante.{% endif %}</p></div></div>
+<div class="cartao">
+  {% if pagina %}
+  <div class="tabela-rolagem"><table>
+    <thead><tr><th>Venda</th><th>Data/hora</th><th>Atendente</th><th>Pagamento</th><th class="num">Total</th><th></th></tr></thead>
+    <tbody>{% for v in pagina %}<tr>
+      <td><strong>{{ v.identificador }}</strong></td><td>{{ v.data_hora|date:"d/m/Y H:i" }}</td><td>{{ v.usuario.nome_exibicao }}</td>
+      <td>{{ v.pagamento.get_meio_display }}</td><td class="num">{{ v.total_centavos|brl }}</td>
+      <td><a class="btn sec pequeno" href="{% url 'vendas:comprovante' v.pk %}">Comprovante</a></td></tr>{% endfor %}</tbody></table></div>
+  <p class="suave" style="margin-top:.8rem">
+    {% if pagina.has_previous %}<a href="?pagina={{ pagina.previous_page_number }}">‹ Anterior</a>{% endif %}
+    Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}
+    {% if pagina.has_next %}<a href="?pagina={{ pagina.next_page_number }}">Próxima ›</a>{% endif %}</p>
+  {% else %}<div class="vazio"><strong>Nenhuma venda concluída</strong>As vendas registradas aparecem aqui.</div>{% endif %}
+</div>
+{% endblock %}

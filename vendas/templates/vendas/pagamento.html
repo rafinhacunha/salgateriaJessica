@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load formatos %}
+{% block titulo %}Pagamento · Salgateria da Jéssica{% endblock %}
+{% block content %}
+{% include "vendas/_passos.html" with passo=2 etapas=etapas_venda %}
+<form method="post" class="duas" id="form-pagamento" data-total="{{ total }}">{% csrf_token %}
+  <section class="cartao">
+    <h2>Forma de pagamento</h2>
+    <p class="suave" style="margin-bottom:.9rem">Cada venda usa um único meio: dinheiro, Pix ou cartão.</p>
+    {% for e in form.non_field_errors %}<div class="alerta erro" role="alert">{{ e }}</div>{% endfor %}
+    {% for e in form.meio.errors %}<div class="alerta erro" role="alert">{{ e }}</div>{% endfor %}
+    <div class="meios" role="radiogroup" aria-label="Forma de pagamento">
+      {% for valor, nome, desc in meios %}
+      <label class="meio"><input type="radio" name="meio" value="{{ valor }}" {% if meio_atual == valor %}checked{% endif %}>
+        <strong>{{ nome }}</strong><span class="suave">{{ desc }}</span></label>{% endfor %}
+    </div>
+
+    <div id="bloco-dinheiro">
+      <div class="campo" style="margin-bottom:.3rem"><label for="{{ form.valor_recebido.id_for_label }}">Valor recebido do cliente</label>{{ form.valor_recebido }}
+        {% for e in form.valor_recebido.errors %}<div class="erro-campo" role="alert">{{ e }}</div>{% endfor %}</div>
+      <div class="sugestoes">{% for s in sugestoes %}<button type="button" class="chip" data-valor="{{ s|campo_reais }}">{{ s|brl }}{% if s == total %} (exato){% endif %}</button>{% endfor %}</div>
+      <div class="valores">
+        <div class="valor"><span>Total do pedido</span><strong>{{ total|brl }}</strong></div>
+        <div class="valor"><span>Valor recebido</span><strong id="v-recebido">R$ 0,00</strong></div>
+        <div class="valor troco"><span>Troco a devolver</span><strong id="v-troco">R$ 0,00</strong></div>
+      </div>
+    </div>
+    <p class="alerta info" id="aviso-externo" style="display:none;margin-top:.5rem">O recebimento por Pix ou cartão é conferido fora do sistema e confirmado manualmente no próximo passo. O sistema não pede nem guarda número de cartão, CVV ou chave Pix.</p>
+  </section>
+  {% include "vendas/_resumo_pagamento.html" %}
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var f = document.getElementById('form-pagamento'), total = parseInt(f.dataset.total, 10);
+  var campo = f.querySelector('[name=valor_recebido]'), blocoD = document.getElementById('bloco-dinheiro'), aviso = document.getElementById('aviso-externo');
+  function parse(v) { v = v.replace(/R\$|\s/g, ''); if (v.indexOf(',') > -1) v = v.replace(/\./g, '').replace(',', '.'); var n = Math.round(parseFloat(v) * 100); return isNaN(n) ? null : n; }
+  function brl(c) { return 'R$ ' + (c / 100).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+  function atualizar() {
+    var meio = f.querySelector('[name=meio]:checked'), dinheiro = !meio || meio.value === 'DINHEIRO';
+    blocoD.style.display = dinheiro ? '' : 'none'; aviso.style.display = dinheiro ? 'none' : '';
+    var r = parse(campo.value || '') || 0;
+    document.getElementById('v-recebido').textContent = brl(r);
+    document.getElementById('v-troco').textContent = brl(Math.max(0, r - total));
+  }
+  f.addEventListener('change', atualizar); campo.addEventListener('input', atualizar);
+  f.querySelectorAll('[data-valor]').forEach(function (b) { b.addEventListener('click', function () { campo.value = b.dataset.valor; atualizar(); }); });
+  atualizar();
+})();
+</script>
+{% endblock %}

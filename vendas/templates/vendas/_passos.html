@@ -1,0 +1,6 @@
+<ol class="passos" style="list-style:none;padding:0" aria-label="Etapas da venda">
+  {% for n, nome in etapas %}
+  <li class="passo {% if n < passo %}feito{% elif n == passo %}atual{% endif %}">
+    <span class="bolinha">{% if n < passo or passo == 5 %}✓{% else %}{{ n }}{% endif %}</span>{{ nome }}</li>
+  {% endfor %}
+</ol>

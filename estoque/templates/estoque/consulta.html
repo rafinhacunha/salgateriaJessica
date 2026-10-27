@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block titulo %}Estoque · Salgateria da Jéssica{% endblock %}
+{% block content %}
+<div class="cabeca">
+  <div><h1>Estoque</h1><p class="suave">Saldo por unidade vendável.</p></div>
+  {% if user.eh_proprietaria %}<div class="acoes">
+    <a class="btn" href="{% url 'estoque:reposicao' %}">+ Reposição</a>
+    <a class="btn sec" href="{% url 'estoque:ajuste' %}">Ajustar inventário</a>
+    <a class="btn sec" href="{% url 'estoque:movimentos' %}">Histórico de movimentos</a>
+  </div>{% endif %}
+</div>
+<div class="cartao">
+  <form method="get" class="linha-busca" style="margin-bottom:1rem">
+    <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nome ou categoria" aria-label="Buscar produto">
+    <button class="btn" type="submit">Buscar</button>
+  </form>
+  {% if produtos %}
+  <div class="tabela-rolagem"><table>
+    <thead><tr><th>Produto</th><th>Categoria</th><th class="num">Saldo</th>{% if user.eh_proprietaria %}<th></th>{% endif %}</tr></thead>
+    <tbody>{% for p in produtos %}
+      <tr>
+        <td>{{ p.nome }}{% if not p.ativo %} <span class="tag">Inativo</span>{% endif %}<span class="sub">{{ p.unidade }}</span></td>
+        <td>{{ p.categoria }}</td>
+        <td class="num">{% if p.saldo == 0 %}<span class="tag zero">Esgotado</span>{% else %}<span class="tag ok">{{ p.saldo }} un</span>{% endif %}</td>
+        {% if user.eh_proprietaria %}<td><div class="acoes" style="justify-content:flex-end">
+          <a class="btn sec pequeno" href="{% url 'estoque:reposicao' %}?produto={{ p.pk }}">Repor</a>
+          <a class="btn sec pequeno" href="{% url 'estoque:ajuste' %}?produto={{ p.pk }}">Ajustar</a>
+          <a class="btn sec pequeno" href="{% url 'estoque:movimentos' %}?produto={{ p.pk }}">Histórico</a>
+        </div></td>{% endif %}
+      </tr>{% endfor %}
+    </tbody></table></div>
+  {% else %}
+  <div class="vazio"><strong>Nenhum produto encontrado</strong>Tente outro nome ou categoria.</div>
+  {% endif %}
+</div>
+{% endblock %}

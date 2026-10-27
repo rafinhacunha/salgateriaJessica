@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block titulo %}Movimentos de estoque · Salgateria da Jéssica{% endblock %}
+{% block content %}
+<div class="cabeca"><div><h1>Histórico de movimentos</h1><p class="suave">Vendas, entradas e ajustes aparecem separados.</p></div>
+  <a class="btn sec" href="{% url 'estoque:consulta' %}">Voltar ao estoque</a></div>
+<div class="cartao">
+  <form method="get" class="linha-busca" style="margin-bottom:1rem">
+    <select name="produto" aria-label="Produto"><option value="">Todos os produtos</option>
+      {% for p in produtos %}<option value="{{ p.pk }}" {% if produto_id == p.pk|stringformat:"s" %}selected{% endif %}>{{ p.nome }}</option>{% endfor %}</select>
+    <select name="tipo" aria-label="Tipo"><option value="">Todos os tipos</option>
+      {% for v, r in tipos %}<option value="{{ v }}" {% if tipo == v %}selected{% endif %}>{{ r }}</option>{% endfor %}</select>
+    <button class="btn" type="submit">Filtrar</button>
+  </form>
+  {% if pagina %}
+  <div class="tabela-rolagem"><table>
+    <thead><tr><th>Data/hora</th><th>Produto</th><th>Tipo</th><th class="num">Qtd.</th><th class="num">Saldo</th><th>Motivo</th><th>Responsável</th></tr></thead>
+    <tbody>{% for m in pagina %}
+      <tr>
+        <td>{{ m.data_hora|date:"d/m/Y H:i" }}</td><td>{{ m.produto.nome }}</td>
+        <td><span class="tag {% if m.tipo == 'ENTRADA' %}ok{% elif m.tipo == 'AJUSTE' %}aviso{% endif %}">{{ m.get_tipo_display }}</span></td>
+        <td class="num">{% if m.quantidade > 0 %}+{% endif %}{{ m.quantidade }}</td>
+        <td class="num">{{ m.saldo_anterior }} → {{ m.saldo_posterior }}</td>
+        <td>{{ m.motivo }}</td><td>{{ m.usuario.nome_exibicao }}</td>
+      </tr>{% endfor %}
+    </tbody></table></div>
+  <p class="suave" style="margin-top:.8rem">
+    {% if pagina.has_previous %}<a href="?pagina={{ pagina.previous_page_number }}&produto={{ produto_id }}&tipo={{ tipo }}">‹ Anterior</a>{% endif %}
+    Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}
+    {% if pagina.has_next %}<a href="?pagina={{ pagina.next_page_number }}&produto={{ produto_id }}&tipo={{ tipo }}">Próxima ›</a>{% endif %}</p>
+  {% else %}
+  <div class="vazio"><strong>Nenhum movimento encontrado</strong>Registre uma reposição ou conclua uma venda.</div>
+  {% endif %}
+</div>
+{% endblock %}

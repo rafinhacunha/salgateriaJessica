@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titulo %}{{ titulo }} · Salgateria da Jéssica{% endblock %}
+{% block content %}
+<div class="cartao" style="max-width:520px">
+  <h1>{{ titulo }}</h1>
+  <form method="post" style="margin-top:1rem">{% csrf_token %}
+    {% for e in form.non_field_errors %}<div class="alerta erro" role="alert">{{ e }}</div>{% endfor %}
+    {% for campo in form %}{% include "_campo.html" %}{% endfor %}
+    <div class="acoes">
+      <button class="btn" type="submit">{{ botao }}</button>
+      <a class="btn sec" href="{% url 'estoque:consulta' %}">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

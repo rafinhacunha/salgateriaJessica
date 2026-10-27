@@ -1,0 +1,6 @@
+<div class="campo">
+  <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+  {{ campo }}
+  {% if campo.help_text %}<div class="suave">{{ campo.help_text }}</div>{% endif %}
+  {% for e in campo.errors %}<div class="erro-campo" role="alert">{{ e }}</div>{% endfor %}
+</div>

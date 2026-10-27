@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load formatos %}
+{% block titulo %}Registro da venda · Salgateria da Jéssica{% endblock %}
+{% block content %}
+{% include "vendas/_passos.html" with passo=3 etapas=etapas_venda %}
+<div class="duas">
+  <section class="cartao">
+    <h2>Registrar a venda</h2>
+    <p class="suave" style="margin-bottom:.8rem">Confira os itens e o recebimento antes de concluir.</p>
+    <div class="tabela-rolagem"><table>
+      <thead><tr><th>Produto</th><th class="num">Qtd.</th><th class="num">Preço unit.</th><th class="num">Subtotal</th></tr></thead>
+      <tbody>{% for i in itens %}<tr><td>{{ i.produto.nome }}</td><td class="num">{{ i.quantidade }}</td><td class="num">{{ i.preco_unitario_centavos|brl }}</td><td class="num"><strong>{{ i.subtotal_centavos|brl }}</strong></td></tr>{% endfor %}
+        <tr><td colspan="3" class="num">Total</td><td class="num"><strong style="font-size:1.3rem">{{ total|brl }}</strong></td></tr></tbody>
+    </table></div>
+    <p class="alerta info" style="margin-top:1rem">Ao registrar, o estoque é baixado uma única vez e o preço de cada item fica guardado na venda.</p>
+  </section>
+  <aside class="cartao">
+    <h3>Pagamento</h3>
+    <div class="resumo-linha"><span class="suave">Forma de pagamento</span><strong>{{ pagamento.get_meio_display }}</strong></div>
+    <div class="resumo-linha"><span class="suave">Total da venda</span><strong>{{ total|brl }}</strong></div>
+    {% if pagamento.meio == "DINHEIRO" %}
+      <div class="resumo-linha"><span class="suave">Valor recebido</span><strong>{{ pagamento.valor_recebido_centavos|brl }}</strong></div>
+      <div class="troco-destaque" style="background:var(--verde-clara);color:var(--verde)"><span>Troco a devolver</span><strong>{{ pagamento.troco_centavos|brl }}</strong></div>
+    {% endif %}
+    <div class="resumo-linha"><span class="suave">Atendente</span><strong>{{ user.nome_exibicao }}</strong></div>
+    <form method="post" style="margin-top:1rem">{% csrf_token %}
+      {% if pagamento.meio != "DINHEIRO" %}
+      <label style="display:flex;gap:.5rem;align-items:flex-start;margin-bottom:.8rem;font-size:.9rem">
+        <input type="checkbox" name="confirmo" style="margin-top:.2rem"> Confirmo que o recebimento por {{ pagamento.get_meio_display }} foi verificado fora do sistema.</label>
+      {% endif %}
+      <button class="btn cheio" type="submit">Confirmar recebimento e registrar venda</button>
+    </form>
+    <a class="btn sec cheio" style="margin-top:.5rem" href="{% url 'vendas:pagamento' %}">Voltar ao pagamento</a>
+  </aside>
+</div>
+{% endblock %}

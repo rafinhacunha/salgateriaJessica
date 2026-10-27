@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load formatos %}
+{% block titulo %}Nova venda · Salgateria da Jéssica{% endblock %}
+{% block content %}
+{% include "vendas/_passos.html" with passo=1 etapas=etapas_venda %}
+<div class="duas">
+  <section class="cartao">
+    <h2>Buscar produto</h2>
+    <p class="suave" style="margin-bottom:.8rem">Pesquise por nome ou categoria e confira preço e saldo antes de vender.</p>
+    <form method="get" class="campo">
+      <label for="q">Nome do produto</label>
+      <div class="linha-busca">
+        <input id="q" type="text" name="q" value="{{ q }}" placeholder="Ex.: coxinha, pastel, refrigerante" autofocus>
+        <input type="hidden" name="categoria" value="{{ categoria }}">
+        <button class="btn" type="submit">Buscar</button>
+      </div>
+    </form>
+    <div class="chips" role="group" aria-label="Categoria">
+      <a class="chip {% if not categoria %}ativo{% endif %}" href="?q={{ q|urlencode }}&categoria=">Todas</a>
+      {% for c in categorias %}<a class="chip {% if categoria == c %}ativo{% endif %}" href="?q={{ q|urlencode }}&categoria={{ c|urlencode }}">{{ c }}</a>{% endfor %}
+    </div>
+
+    {% if not buscou %}
+      <div class="vazio"><strong>Nenhuma busca ainda</strong>Digite o nome de um produto ou escolha uma categoria para ver preço e saldo disponíveis.</div>
+    {% elif not resultados %}
+      <div class="vazio"><strong>Não encontramos produtos</strong>Tente outro nome ou outra categoria.</div>
+    {% else %}
+      <p class="suave" style="margin-bottom:.4rem">{{ resultados|length }} produto{{ resultados|length|pluralize:"s" }} encontrado{{ resultados|length|pluralize:"s" }}</p>
+      <div class="tabela-rolagem"><table>
+        <thead><tr><th>Produto</th><th class="num">Preço</th><th>Saldo</th><th class="num">Quantidade</th></tr></thead>
+        <tbody>{% for p in resultados %}
+          <tr>
+            <td>{{ p.nome }}<span class="sub">{{ p.categoria }} · {{ p.unidade }}{% if p.pk in no_pedido %} · <span class="tag aviso">No pedido: {{ no_pedido|get_item:p.pk }}</span>{% endif %}</span></td>
+            <td class="num"><strong>{{ p.preco_centavos|brl }}</strong></td>
+            <td>{% if p.saldo == 0 %}<span class="tag zero">Esgotado</span>{% else %}<span class="tag ok">{{ p.saldo }} un</span>{% endif %}</td>
+            <td>
+              <form method="post" action="{% url 'vendas:adicionar' %}" class="linha-add">{% csrf_token %}
+                <input type="hidden" name="produto" value="{{ p.pk }}">
+                <input type="hidden" name="q" value="{{ q }}"><input type="hidden" name="categoria" value="{{ categoria }}">
+                {% if p.saldo == 0 %}
+                  <button class="btn desativado" type="button" disabled>Sem saldo</button>
+                {% else %}
+                  <span class="qtd"><button type="button" data-passo="-1" aria-label="Diminuir">−</button>
+                    <input type="number" name="quantidade" value="1" min="1" max="{{ p.saldo }}" aria-label="Quantidade de {{ p.nome }}">
+                    <button type="button" data-passo="1" aria-label="Aumentar">+</button></span>
+                  <button class="btn pequeno" type="submit">Adicionar</button>
+                {% endif %}
+              </form>
+            </td>
+          </tr>{% endfor %}
+        </tbody></table></div>
+    {% endif %}
+  </section>
+
+  <aside class="cartao pedido">
+    <h3>Pedido atual <span class="suave">{% if qtd_itens %}{{ qtd_itens }} item{{ qtd_itens|pluralize:"ns" }} · {{ qtd_unidades }} unidade{{ qtd_unidades|pluralize }}{% else %}0 itens{% endif %}</span></h3>
+    {% if itens %}
+      {% for i in itens %}
+      <div class="pedido-item">
+        <div class="topo-item"><span>{{ i.produto.nome }}<span class="sub">{{ i.quantidade }} × {{ i.preco_unitario_centavos|brl }}</span></span><span>{{ i.subtotal_centavos|brl }}</span></div>
+        <div class="base-item">
+          <form method="post" action="{% url 'vendas:alterar' i.pk %}" class="qtd">{% csrf_token %}
+            <input type="hidden" name="q" value="{{ q }}"><input type="hidden" name="categoria" value="{{ categoria }}">
+            <button name="acao" value="menos" {% if i.quantidade <= 1 %}disabled{% endif %} aria-label="Diminuir {{ i.produto.nome }}">−</button>
+            <span>{{ i.quantidade }}</span>
+            <button name="acao" value="mais" aria-label="Aumentar {{ i.produto.nome }}">+</button>
+          </form>
+          <form method="post" action="{% url 'vendas:remover' i.pk %}">{% csrf_token %}
+            <input type="hidden" name="q" value="{{ q }}"><input type="hidden" name="categoria" value="{{ categoria }}">
+            <button class="btn perigo pequeno" type="submit">Remover</button></form>
+        </div>
+      </div>{% endfor %}
+    {% else %}
+      <div class="vazio" style="margin:1rem 0"><strong>Nenhum item adicionado</strong>Busque um produto e adicione ao pedido.</div>
+    {% endif %}
+    <div class="total"><span class="suave">Total</span><strong>{{ total|brl }}</strong></div>
+    {% if itens %}<a class="btn cheio" href="{% url 'vendas:pagamento' %}">Escolher forma de pagamento</a>
+    {% else %}<button class="btn cheio" disabled>Escolher forma de pagamento</button><p class="suave" style="text-align:center;margin-top:.5rem">Inclua pelo menos um item para continuar.</p>{% endif %}
+  </aside>
+</div>
+{% endblock %}
